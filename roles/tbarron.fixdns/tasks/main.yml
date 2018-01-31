@@ -1,0 +1,7 @@
+---
+- name: update /etc/resolv.conf
+  copy: src=resolv.conf
+        dest=/etc/resolv.conf
+        mode=0775
+        force=yes
+  become: true

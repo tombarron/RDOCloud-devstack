@@ -1,0 +1,27 @@
+## This playbook tears down your host VM for devstack
+##
+## It leaves security group, keypair, cinder volume,
+## private network, and router used for the host VM
+## in place on the assumption that in the most common
+## case you want to tear down and rebuild the VM, in
+## which case it saves time to leave these.
+##
+## Note that your cinder volume may have stale files
+## for your new devstack after you do a teardown and
+## rebuild.  Clean up the contents of the volume manually
+## before re-stacking since only you really know what
+## you want to keep or not.
+
+- hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: "/usr/bin/env python3"
+  vars_files:
+    - keys.yml
+  tasks:
+    - name: destroy the devstack host VM
+      os_server:
+        name: devstack_host_vm
+        state: absent
+        wait: yes
+

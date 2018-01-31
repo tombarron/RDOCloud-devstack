@@ -1,0 +1,133 @@
+---
+# This first play sets up the environment in
+# RDOCloud for running devstack on a nova instance
+# there.
+
+- hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: "/usr/bin/env python3"
+  vars_files:
+    - keys.yml
+  tasks:
+    - name: add ssh ingress rule
+      os_security_group_rule:
+        state: present
+        security_group: default
+        protocol: tcp
+        port_range_min: 22
+        port_range_max: 22
+    - name: create keypair
+      os_keypair:
+        state: present
+        name: "{{ key_name }}"
+        public_key_file: "{{ public_key_file }}"
+    - name: create a volume to hold development files
+      os_volume:
+        state: present
+        wait: yes
+        size: 200
+        display_name: development_files
+    - name: create private network for the host VM
+      os_network:
+        state: present
+        name: host-VM-private-net
+    - name: create private subnet on that network
+      os_subnet:
+        state: present
+        network_name: host-VM-private-net
+        name: host-VM-private-subnet
+        cidr: 192.168.0.0/24
+        gateway_ip: 192.168.0.1
+        state: present
+    - name: create router for the private network
+      os_router:
+        state: present
+        name: host-VM-private-router
+        interfaces: host-VM-private-subnet
+        network: 38.145.32.0/22
+    - name: launch the host VM
+      os_server:
+        name: devstack_host_vm
+        state: present
+        wait: yes
+        auto_ip: yes
+        image: 'CentOS-7-x86_64-GenericCloud-1708'
+        flavor: m1.large
+        key_name: "{{ key_name }}"
+        network: host-VM-private-net
+        volumes:
+          - development_files
+      register: devstack_host_vm
+    - debug:
+        var: devstack_host_vm.server.public.v4
+    - name: add the devstack host_vm to our ansible inventory
+      add_host: hostname="{{ devstack_host_vm.server.public_v4 }}"
+                groups=clouddev
+                ansible_ssh_private_key_file="{{private_key_file}}"
+                ansible_ssh_user=centos
+    - name: Create local login script
+      template: src=login.sh
+                dest=.
+                mode=0755
+
+# Wait for the server to finish booting and become accessible.
+- hosts: clouddev
+  gather_facts: no
+  tasks:
+    - name: Wait for instance to finish booting
+      connection: local
+      wait_for:
+        host="{{ansible_ssh_host|default(inventory_hostname)}}"
+        search_regex=OpenSSH
+        port=22
+        delay=30
+        timeout=600
+    - name: Try to login to the instance
+      raw: "/bin/ls"
+      retries: 5
+      delay: 10
+      ignore_errors: true
+
+# Configure the /opt filesystem. This has to be separate from the
+# previous step and next step for ordering.
+- hosts: clouddev
+  gather_facts: no
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.7
+
+  # Create a filesystem on the attached volume. /dev/vdb
+  # This is where we'll keep development files
+  tasks:
+    - name: Create /opt filesystem
+      filesystem: fstype=ext4 dev=/dev/vdb
+      become: true
+      become_user: root
+      become_method: sudo
+    - name: Mount /opt filesystem
+      mount: name=/opt src=/dev/vdb fstype=ext4 state=mounted
+      become: true
+      become_user: root
+      become_method: sudo
+
+# Configure the host VM. This needs to come last.
+- hosts: clouddev
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.7
+    # Use a separate filesystem for the local repository cache.
+    openstack_dev_repos_dir: "/opt/devel/repos"
+    openstack_project_dir: "/opt/devel/projects"
+    openstack_repos_dir: "/opt/devel/repos"
+    python_dev_install_pypy: false
+    python_dev_versions:
+      - version: "3.5"
+      - version: "2.7"
+    swap:
+      blocks_count: 4048
+  roles:
+    - fixdns
+    - devstack
+
+
+
