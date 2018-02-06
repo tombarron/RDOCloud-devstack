@@ -39,7 +39,6 @@
         name: host-VM-private-subnet
         cidr: 192.168.0.0/24
         gateway_ip: 192.168.0.1
-        state: present
     - name: create router for the private network
       os_router:
         state: present
@@ -60,11 +59,11 @@
           - development_files
       register: devstack_host_vm
     - debug:
-        var: devstack_host_vm.server.public.v4
+        msg: "Devstack host vm booted with public IP {{ devstack_host_vm.openstack.public_v4 }}"
     - name: add the devstack host_vm to our ansible inventory
-      add_host: hostname="{{ devstack_host_vm.server.public_v4 }}"
+      add_host: hostname="{{ devstack_host_vm.openstack.public_v4 }}"
                 groups=clouddev
-                ansible_ssh_private_key_file="{{private_key_file}}"
+                ansible_ssh_private_key_file="{{ private_key_file }}"
                 ansible_ssh_user=centos
     - name: Create local login script
       template: src=login.sh
@@ -78,7 +77,7 @@
     - name: Wait for instance to finish booting
       connection: local
       wait_for:
-        host="{{ansible_ssh_host|default(inventory_hostname)}}"
+        host="{{ ansible_ssh_host|default(inventory_hostname) }}"
         search_regex=OpenSSH
         port=22
         delay=30
