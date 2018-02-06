@@ -1,4 +1,3 @@
-=================
 RDOCloud-devstack
 =================
 
@@ -8,13 +7,13 @@ nova VM runs CentOS 7.  The playbook has been tested running on
 Fedora 27 but should work on CentOS, indeed on any system that
 supports recent ansible.
 
-Prerequisites
-=============
+#Prerequisites
 
 We assume that you have credentials to use RDOCloud and that
 you have set them up in ${HOME}/.config/openstack/clouds.yaml
-along the following lines::
+along the following lines:
 
+```
 $ cat ~/.config/openstack/clouds.yaml 
 clouds:
     rdo-cloud:
@@ -24,12 +23,14 @@ clouds:
             username: <your-user-name>
             password: <your-password>
         region: RegionOne
-$ 
+$
+```
 
 The ansible playbook needs the shade library.  We don't have that
 packaged for CentOS so install that in a virtualenv
-and run the playbook after activating the virtualenv::
+and run the playbook after activating the virtualenv:
 
+```
 $ virtualenv venv
 New python executable in ...
 Also creating executable in ...
@@ -37,13 +38,15 @@ Installing setuptools, pip, wheel...done.
 $ source venv/bin/activate
 (venv) $ pip install shade
 ...
+```
 
 We install and activate this virtualenv in the same directory as the ansible
 playbook.
 
 Before you run the playbook edit copy keys.yml.sample to keys.yml and
-edit the latter with the paths to your public and private ssh keys:: 
+edit the latter with the paths to your public and private ssh keys:
 
+```
 (venv) $ cat keys.yml.sample
 ---
 # Set the name of the key known to the OpenStack cloud.
@@ -52,14 +55,15 @@ key_name: devstack_keypair
 # with the named key.
 private_key_file: "/path/to/your/private/key"
 public_key_file: "/path/to/your/public/key"
+```
 
+#Playbooks
 
-Playbooks
-=========
+Now you can run the playbook:
 
-Now you can run the playbook::
-
+```
 (venv) $ ansible-playbook devstack-setup.yml
+```
 
 The playbook will set up an appropriate security group, keypair, and private
 network, as well as a cinder volume to hold your development files and a router
@@ -89,6 +93,7 @@ and develop as normal.
 
 To destroy your devstack host VM and start over again just run
 
+```
 (venv) $ ansible-playbook destroy.yml
-
+```
 
