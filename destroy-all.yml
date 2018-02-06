@@ -1,0 +1,46 @@
+## This playbook tears down your host VM for devstack
+## along with all the other infra that was built for
+## it.
+
+- hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: "/usr/bin/env python3"
+  vars_files:
+    - keys.yml
+  tasks:
+    - name: destroy the devstack host VM
+      os_server:
+        name: devstack_host_vm
+        state: absent
+        wait: yes
+    - name: destroy the router for the host VM's private network
+      os_router:
+        state: absent
+        name: host-VM-private-router
+    - name: destroy the private subnet
+      os_subnet:
+        state: absent
+        name: host-VM-private-subnet
+    - name: destroy the private network
+      os_network:
+        state: absent
+        name: host-VM-private-net
+    - name: remove the development files volume
+      os_volume:
+        state: absent
+        display_name: development_files
+    - name: remove keypair
+      os_keypair:
+        state: absent
+        name: "{{ key_name }}"
+    - name: remove ssh ingress rule
+      os_security_group_rule:
+        state: absent
+        security_group: default
+        protocol: tcp
+        port_range_min: 22
+        port_range_max: 22
+
+
+
