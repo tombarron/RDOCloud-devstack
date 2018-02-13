@@ -109,6 +109,12 @@
       become: true
       become_user: root
       become_method: sudo
+    - name: Color the prompt string green
+      become: true
+      lineinfile:
+        path: /etc/bashrc
+        line: 'PS1="\[\033[1;32m\][\u@\h \W]\$\[\033[0m\] "'
+        insertbefore: EOF
 
 # Configure the host VM. This needs to come last.
 - hosts: clouddev
@@ -130,3 +136,4 @@
 
 
 
+      d
