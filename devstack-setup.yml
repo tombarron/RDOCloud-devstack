@@ -124,6 +124,14 @@
         name: wget
         state: latest
 
+  tasks:
+    - name: Set background color for vim as dark
+      become: true
+      lineinfile:
+        path: /etc/vimrc
+        line: 'set background=dark'
+        insertbefore: EOF
+
 # Configure the host VM. This needs to come last.
 - hosts: clouddev
   vars:
