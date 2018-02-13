@@ -110,6 +110,20 @@
       become_user: root
       become_method: sudo
 
+  # Configure the remote machine for convenience.
+  tasks:
+    - name: Install vim
+      become: true
+      yum:
+        name: vim
+        state: latest
+    # wget's very useful when cloud image is required
+    - name: Install wget
+      become: true
+      yum:
+        name: wget
+        state: latest
+
   tasks:
     - name: Set background color for vim as dark
       become: true
