@@ -65,6 +65,12 @@
                 groups=clouddev
                 ansible_ssh_private_key_file="{{ private_key_file }}"
                 ansible_ssh_user=centos
+    - name: Remove the conflicting entry from the ~/.ssh/known_hosts
+      when: devstack_host_vm.openstack.public_v4 is defined
+      lineinfile:
+        path: ~/.ssh/known_hosts
+        state: absent
+        regexp: "{{ devstack_host_vm.openstack.public_v4 }} *"
     - name: Create local login script
       template: src=login.sh
                 dest=.
