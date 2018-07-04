@@ -20,3 +20,9 @@
         src=local.conf
         mode=0644
         owner={{ansible_env.USER}}
+- name: uninstall OS python-setuptools
+  yum:
+    name: python-setuptools
+    state: absent
+  become: true
+
