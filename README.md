@@ -85,15 +85,25 @@ The playbook will install a stack user and /home/stack/devstack, as well as
 a version of /home/stack/devstack/local.conf suitable for stacking with the
 cephNFS back end.
 
+#Devstack
+
+The playbook sets up /home/centos/devstack with the latest contents and 
+a version of local.conf suitable for stacking with the CephFS NFS back 
+end.  local.conf has comments that show how to change it to deploy with 
+the CephFS native back end.
+
 It does not actually run devstack since you may want to customize local.conf, etc.
 
 The playbook writes a login.sh file in the current directory that you may use
-to login to your devstack host VM.  There you can customize local.conf, run stack.sh,
-and develop as normal.
+to login to your devstack host VM.
 
 To destroy your devstack host VM and start over again just run
 
 ```
 (venv) $ ansible-playbook destroy.yml
-```
 
+or to blow away the cinder volume for /opt as well:
+
+(venv) $ ansible-playbook destroy-all.yml
+
+```

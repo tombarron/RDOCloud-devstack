@@ -25,4 +25,3 @@
     name: python-setuptools
     state: absent
   become: true
-
