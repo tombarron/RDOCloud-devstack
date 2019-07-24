@@ -2,12 +2,12 @@ RDOCloud-devstack
 =================
 
 This playbook creates a nova VM in the RDOCloud and sets up
-a devstack environment there with the CephNFS backend.  The
-nova VM runs CentOS 7.  The playbook has been tested running on
-Fedora 27 but should work on CentOS, indeed on any system that
-supports recent ansible.
+a devstack environment there with the CephNFS backend. The
+nova VM runs CentOS 7. The playbook has been tested running on
+Fedora 27/Fedora 30 but should work on CentOS,
+indeed on any system that supports recent ansible.
 
-#Prerequisites
+# Prerequisites
 
 We assume that you have credentials to use RDOCloud and that
 you have set them up in ${HOME}/.config/openstack/clouds.yaml
@@ -40,6 +40,21 @@ $ source venv/bin/activate
 ...
 ```
 
+We also need the libselinux-python library installed. Considering we will be
+using the virtual environment, we will need to install the libselinux-python
+lib in the host and then copy the binaries to the venv. Precisely,
+
+```
+sudo dnf install -y libselinux-python
+
+cp -r /usr/lib64/python3.7/site-packages/selinux $VIRTUAL_ENV/lib/python3.7/site-packages
+cp /usr/lib64/python3.7/site-packages/_selinux.so $VIRTUAL_ENV/lib/python3.7/site-packages
+```
+
+If this previous step is not done, when trying to access the CentOS 7 image in the VM
+you will get "Aborting, target uses selinux but python bindings (libselinux-python) aren’t installed!"
+error.
+
 We install and activate this virtualenv in the same directory as the ansible
 playbook.
 
@@ -57,7 +72,7 @@ private_key_file: "/path/to/your/private/key"
 public_key_file: "/path/to/your/public/key"
 ```
 
-#Playbooks
+# Playbooks
 
 Now you can run the playbook:
 
@@ -83,9 +98,9 @@ need to destroy and rebuild the host VM.
 
 The playbook will install a stack user and /home/stack/devstack, as well as
 a version of /home/stack/devstack/local.conf suitable for stacking with the
-cephNFS back end.
+CephNFS back end.
 
-#Devstack
+# Devstack
 
 The playbook sets up /home/centos/devstack with the latest contents and 
 a version of local.conf suitable for stacking with the CephFS NFS back 
