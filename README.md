@@ -26,6 +26,8 @@ clouds:
 $
 ```
 
+## CentOS
+
 The ansible playbook needs the shade library.  We don't have that
 packaged for CentOS so install that in a virtualenv
 and run the playbook after activating the virtualenv:
@@ -57,6 +59,17 @@ error.
 
 We install and activate this virtualenv in the same directory as the ansible
 playbook.
+
+## Fedora
+
+With Fedora 30 you can skip the virtualenv used for CentOS and
+just
+
+```
+sudo dnf install -y python3-shade python3-selinux
+
+```
+## Keys
 
 Before you run the playbook edit copy keys.yml.sample to keys.yml and
 edit the latter with the paths to your public and private ssh keys:
